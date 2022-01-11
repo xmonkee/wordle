@@ -1,57 +1,65 @@
 words = []
 with open('words') as f:
     words = f.read().split("\n")
-words = [w.lower() for w in words if len(w) == 5]
 
-letters = "abcdefghijklmnopqrstuvwxyz"
 
-letter_counts = {k:0 for k in letters}
-for word in words:
-    for letter in word:
-        letter_counts[letter] += 1
+blacks = set() # letters that cannot be in word
+yellows = {}  # if l in yellow then l is present ut cannot be in positions yellow[l]
+greens = {}  # greens[i] is a letter that must be at position i
 
-word_scores = {}
-for word in words:
-    score = 0
-    for letter in set(word):
-        score += letter_counts[letter]
-    word_scores[word] = score
-
-words.sort(key=lambda w: -word_scores[w])
-
-options = {k:range(5) for k in letters}
 
 def is_allowed(word):
+    if not all(y in word for y in yellows.keys()):
+        return False
     for i,l in enumerate(word):
-        if i not in options[l]:
+        if l in blacks:
+            return False
+        if l in yellows and i in yellows[l]:
+            return False
+        if i in greens and greens[i] != l:
             return False
     return True
 
-def split(s):
-    for i in range(0, len(s), 2):
-        yield [s[i],s[i+1]]
 
-def process(grays, greens, yellows):
-    if grays:
-        for l in grays:
-            options[l] = []
-    if greens:
-        for l,p in split(greens):
-            options[l] = [int(p)]
-    if yellows:
-        for l,p in split(yellows):
-            options[l].remove(int(p))
+def process(inp, output):
+    if len(output) != 5 or len(set(output)-set("byg")) > 0:
+        return "error"
+    for i,o in enumerate(output):
+        l = inp[i]
+        if o == 'b':
+            blacks.add(l)
+        elif o == 'y':
+            yellows[l] = (yellows.get(l) or []) + [i]
+        else:  # o == 'g'
+            greens[i] = l
 
 
-while True:
+def generate_guess():
     for word in words:
         if is_allowed(word):
-            print(word)
-            break
-
-    grays = raw_input("Enter grays: ")
-    greens = raw_input("Enter greens: ")
-    yellows = raw_input("Enter yellows: ")
-    process(grays, greens, yellows)
+            return word
+    return "not found"
 
 
+def run_guess(guess):
+    print("Guess: " + guess)
+    output = input("Output: ")
+    if output == "ggggg":
+        return "done"
+    if process(guess, output) == "error":
+        return run_guess(guess)
+    return "continue"
+
+
+def main():
+    done = False
+    while not done:
+        guess = generate_guess()
+        if guess == "not found":
+            print("Not Found")
+            return
+        done = run_guess(guess) == "done"
+
+
+if __name__ == "__main__":
+    main()
