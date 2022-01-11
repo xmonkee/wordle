@@ -1,5 +1,6 @@
 ## words.py
 Generate word list in descending order of freq
+
 Needs unigram_freq.csv (from kaggle)
 
 ## test.py
@@ -22,9 +23,12 @@ query
 
 ## wordle.py
 Play wordle
+
 Take the guess and enter into worlde website
-Take the color ouput and enter back into program like
-⬜🟩⬜🟨⬜  would be "bgbyb"
+
+Take the color ouput and enter back into program 
+
+Example ⬜🟩⬜🟨⬜  would be "bgbyb"
 
 ```
 $ python wordle.py
