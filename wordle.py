@@ -1,65 +1,64 @@
-words = []
-with open('words') as f:
-    words = f.read().split("\n")
+class State:
+    def __init__(self):
+        # letters that cannot be in word
+        self.blacks = set()
+        # if l is in yellow then l is present in word
+        # l cannot be in positions yellow[l]
+        self.yellows = {}
+        # greens[i] is a letter that must be at position i
+        self.greens = {}
 
+    def process(self, guess, outcome):
+        if len(outcome) != 5 or len(set(outcome)-set("byg")) > 0:
+            raise Exception(outcome)
+        for i,o in enumerate(outcome):
+            l = guess[i]
+            if o == 'b':
+                self.blacks.add(l)
+            elif o == 'y':
+                self.yellows[l] = self.yellows.get(l, []) + [i]
+            else:  # o == 'g'
+                self.greens[i] = l
 
-blacks = set() # letters that cannot be in word
-yellows = {}  # if l in yellow then l is present ut cannot be in positions yellow[l]
-greens = {}  # greens[i] is a letter that must be at position i
-
-
-def is_allowed(word):
-    if not all(y in word for y in yellows.keys()):
-        return False
-    for i,l in enumerate(word):
-        if l in blacks:
+    def is_allowed(self, word):
+        if not all(y in word for y in self.yellows.keys()):
             return False
-        if l in yellows and i in yellows[l]:
-            return False
-        if i in greens and greens[i] != l:
-            return False
-    return True
+        for i,l in enumerate(word):
+            if l in self.blacks:
+                return False
+            if l in self.yellows and i in self.yellows[l]:
+                return False
+            if i in self.greens and self.greens[i] != l:
+                return False
+        return True
+
+    def generate_guess(self, wordlist):
+        for word in wordlist:
+            if self.is_allowed(word):
+                return word
+        return "not found"
 
 
-def process(inp, output):
-    if len(output) != 5 or len(set(output)-set("byg")) > 0:
-        return "error"
-    for i,o in enumerate(output):
-        l = inp[i]
-        if o == 'b':
-            blacks.add(l)
-        elif o == 'y':
-            yellows[l] = (yellows.get(l) or []) + [i]
-        else:  # o == 'g'
-            greens[i] = l
-
-
-def generate_guess():
-    for word in words:
-        if is_allowed(word):
-            return word
-    return "not found"
-
-
-def run_guess(guess):
-    print("Guess: " + guess)
-    output = input("Output: ")
-    if output == "ggggg":
-        return "done"
-    if process(guess, output) == "error":
-        return run_guess(guess)
-    return "continue"
-
-
-def main():
+def main(wordlist):
     done = False
+    state = State()
     while not done:
-        guess = generate_guess()
+        guess = state.generate_guess(wordlist)
         if guess == "not found":
             print("Not Found")
             return
-        done = run_guess(guess) == "done"
+
+        print("Guess: " + guess)
+        outcome = input("Output: ")
+
+        if outcome == "ggggg":
+            return "done"
+
+        state.process(guess, outcome)
 
 
 if __name__ == "__main__":
-    main()
+    words = []
+    with open('words') as f:
+        words = f.read().split("\n")
+    main(words)
