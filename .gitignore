@@ -1,4 +1,5 @@
 __pycache__/
-unigram_freq.csv
+**/*.pyc
 *.swp
+inputs/unigram_freq.csv
 

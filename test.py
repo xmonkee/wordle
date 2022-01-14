@@ -9,14 +9,24 @@ def gen_output(word, guess):
             yield 'g'
         else: yield 'y'
 
-def test(word):
-    guess = generate_guess()
+def test(word, wordlist, show=False):
+    state = State(wordlist)
+    guess = state.generate_guess()
     while guess != word:
         output = list(gen_output(word, guess))
-        print(guess + "->" + "".join(output))
-        process(guess, output)
-        guess = generate_guess()
-    print(guess)
+        if show:
+            print(guess + "->" + "".join(output))
+        state.process(guess, output)
+        guess = state.generate_guess()
+    if show:
+        print(guess)
+    return state.guesses
 
 
-test(sys.argv[1])
+# for wordlistfile in ['words_alphabetic', 'words_freq', 'words_common_letters']:
+    # wordlist = []
+
+if __name__ == '__main__':
+    with open('words') as f:
+        wordlist = f.readlines()
+    test(sys.argv[1], wordlist, show=True)

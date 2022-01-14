@@ -1,5 +1,7 @@
 class State:
-    def __init__(self):
+    def __init__(self, wordlist):
+        self.guesses = 0
+        self.wordlist = wordlist
         # letters that cannot be in word
         self.blacks = set()
         # if l is in yellow then l is present in word
@@ -9,16 +11,18 @@ class State:
         self.greens = {}
 
     def process(self, guess, outcome):
-        if len(outcome) != 5 or len(set(outcome)-set("byg")) > 0:
+        if len(outcome) != 5:
             raise Exception(outcome)
         for i,o in enumerate(outcome):
             l = guess[i]
-            if o == 'b':
-                self.blacks.add(l)
+            if o == 'g':
+                self.greens[i] = l
             elif o == 'y':
                 self.yellows[l] = self.yellows.get(l, []) + [i]
-            else:  # o == 'g'
-                self.greens[i] = l
+            elif o == 'b':
+                self.blacks.add(l)
+            else:
+                raise Exception(outcome)
 
     def is_allowed(self, word):
         if not all(y in word for y in self.yellows.keys()):
@@ -32,18 +36,19 @@ class State:
                 return False
         return True
 
-    def generate_guess(self, wordlist):
-        for word in wordlist:
+    def generate_guess(self):
+        for word in self.wordlist:
             if self.is_allowed(word):
+                self.guesses += 1
                 return word
         return "not found"
 
 
 def main(wordlist):
     done = False
-    state = State()
+    state = State(wordlist)
     while not done:
-        guess = state.generate_guess(wordlist)
+        guess = state.generate_guess()
         if guess == "not found":
             print("Not Found")
             return
@@ -58,7 +63,7 @@ def main(wordlist):
 
 
 if __name__ == "__main__":
-    words = []
-    with open('words') as f:
-        words = f.read().split("\n")
-    main(words)
+    wordlist = []
+    with open('./wordsets/words_alph') as f:
+        wordlist = f.readlines()
+    main(wordlist)
