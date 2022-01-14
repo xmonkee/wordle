@@ -3,7 +3,7 @@ r = None
 
 words = None
 with open('./inputs/words_engl') as f:
-    words = f.readlines()
+    words = f.read().splitlines()
     words = [w.lower() for w in words if len(w) == 5]
 
 word_freq = None

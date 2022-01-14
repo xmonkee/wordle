@@ -9,8 +9,13 @@ class State:
         self.yellows = {}
         # greens[i] is a letter that must be at position i
         self.greens = {}
+        # banned words are not in the wordle wordlist
+        self.banned = set()
 
     def process(self, guess, outcome):
+        if outcome == "banned":
+            self.banned.add(guess)
+            return
         if len(outcome) != 5:
             raise Exception(outcome)
         for i,o in enumerate(outcome):
@@ -23,8 +28,14 @@ class State:
                 self.blacks.add(l)
             else:
                 raise Exception(outcome)
+        # There is a bug in wordle that will show a letter
+        # as black AND green if it's entered more times than it's present
+        self.blacks -= set(self.greens.values())
+        self.blacks -= set(self.yellows.keys())
 
     def is_allowed(self, word):
+        if word in self.banned:
+            return False
         if not all(y in word for y in self.yellows.keys()):
             return False
         for i,l in enumerate(word):
@@ -64,6 +75,6 @@ def main(wordlist):
 
 if __name__ == "__main__":
     wordlist = []
-    with open('./wordsets/words_alph') as f:
-        wordlist = f.readlines()
+    with open('./wordsets/words_freq') as f:
+        wordlist = f.read().splitlines()
     main(wordlist)

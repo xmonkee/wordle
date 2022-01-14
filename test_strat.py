@@ -2,20 +2,23 @@ from test import test
 import random
 
 
-def test_wordlist(wordlistfile, testlist):
-    wordlist = []
-    with open('./wordsets/'+wordlistfile) as f:
-        wordlist = f.readlines()
+def test_wordlist(listname, wordlist, testlist):
     outcomes = [test(testword, wordlist) for testword in testlist]
-    print(wordlistfile + ": "  + str(sum(outcomes)/len(outcomes)))
+    print(listname + ": "  + str(sum(outcomes)/len(outcomes)))
 
 
 if __name__ == '__main__':
     testlist = []
     with open('./wordsets/words_freq') as f:
-        testlist = f.readlines()
-    testlist = testlist[:500]
+        testlist = f.read().splitlines()
+    testlist = testlist[:200]
     random.shuffle(testlist)
+    worldlist=[]
     for wordlistfile in ['words_alph', 'words_freq', 'words_comm']:
-        test_wordlist(wordlistfile, testlist)
+        with open('./wordsets/'+wordlistfile) as f:
+            wordlist = f.read().splitlines()
+            test_wordlist(wordlistfile, wordlist, testlist)
+    random.shuffle(wordlist)
+    test_wordlist("words_rand", wordlist, testlist)
+
 

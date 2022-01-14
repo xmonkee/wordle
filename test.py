@@ -28,5 +28,5 @@ def test(word, wordlist, show=False):
 
 if __name__ == '__main__':
     with open('words') as f:
-        wordlist = f.readlines()
+        wordlist = f.read().splitlines()
     test(sys.argv[1], wordlist, show=True)
