@@ -11,8 +11,9 @@ if __name__ == '__main__':
     testlist = []
     with open('./wordsets/words_freq') as f:
         testlist = f.read().splitlines()
-    testlist = testlist[:200]
+    testlist = testlist[:3000]
     random.shuffle(testlist)
+    testlist = testlist[:200]
     worldlist=[]
     for wordlistfile in ['words_alph', 'words_freq', 'words_comm']:
         with open('./wordsets/'+wordlistfile) as f:

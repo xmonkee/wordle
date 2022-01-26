@@ -3,14 +3,9 @@ class State:
         self.guesses = 0
         self.wordlist = wordlist
         # letters that cannot be in word
-        self.blacks = set()
-        # if l is in yellow then l is present in word
-        # l cannot be in positions yellow[l]
-        self.yellows = {}
-        # greens[i] is a letter that must be at position i
-        self.greens = {}
-        # banned words are not in the wordle wordlist
         self.banned = set()
+        # list of previous guesses and outcomes
+        self.prev = list()
 
     def process(self, guess, outcome):
         if outcome == "banned":
@@ -18,34 +13,37 @@ class State:
             return
         if len(outcome) != 5:
             raise Exception(outcome)
-        for i,o in enumerate(outcome):
-            l = guess[i]
-            if o == 'g':
-                self.greens[i] = l
-            elif o == 'y':
-                self.yellows[l] = self.yellows.get(l, []) + [i]
-            elif o == 'b':
-                self.blacks.add(l)
-            else:
-                raise Exception(outcome)
-        # There is a bug in wordle that will show a letter
-        # as black AND green if it's entered more times than it's present
-        self.blacks -= set(self.greens.values())
-        self.blacks -= set(self.yellows.keys())
+        if len(set(outcome) - set('byg')) > 0:
+            raise Exception(outcome)
+        self.prev.append((guess, outcome))
 
     def is_allowed(self, word):
         if word in self.banned:
             return False
-        if not all(y in word for y in self.yellows.keys()):
-            return False
-        for i,l in enumerate(word):
-            if l in self.blacks:
-                return False
-            if l in self.yellows and i in self.yellows[l]:
-                return False
-            if i in self.greens and self.greens[i] != l:
-                return False
+        for guess,outcome in self.prev:
+            checked = [False]*5
+            for i in range(5):
+                if outcome[i] == 'g':
+                    if word[i] != guess[i]: return False
+                    checked[i] = True
+            for i in range(5):
+                if outcome[i] == 'y':
+                    if word[i] == guess[i]: return False
+                    for j in range(5):
+                        if not checked[j] and i != j:
+                            if word[j] == guess[i]:
+                                checked[j] = True
+                                break
+                    else: # yellow letter not found
+                        return False
+            for i in range(5):
+                if outcome[i] == 'b':
+                    for j in range(5):
+                        if not checked[j]:
+                            if word[j] == guess[i]:
+                                return False
         return True
+
 
     def generate_guess(self):
         for word in self.wordlist:
